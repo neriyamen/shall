@@ -4,10 +4,9 @@ from commands import COMMANDS
 from format import *
 
 HOST = '127.0.0.1'
- # upload c:\users\base\desktop\hi.txt c:\users\base\desktop\hi2.txt
- # upload c:\users\base\desktop\pic.png c:\users\base\desktop\pic2.png
- # download c:\users\base\desktop\hi.txt c:\users\base\desktop\hi2.txt
+
 class CLIENT:
+    # this class containing the properties of client and connection's properties
     def __init__(self):
         self.connection = CONNECT(HOST, PORT)
         self.commands = COMMANDS(self.connection)

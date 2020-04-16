@@ -31,9 +31,5 @@ class CONNECT:
             exit()
 
     def send_message(self, data):
-        # send a message to the server
-        # try:
-            self.socket.sendall(self.crypto.encrypt(data))
-        # except:
-        #     print('connection error')
-        #     exit()
+        # send message to server
+        self.socket.sendall(self.crypto.encrypt(data))

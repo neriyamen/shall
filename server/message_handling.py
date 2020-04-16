@@ -18,18 +18,19 @@ class MESSAGE_HANDLER:
         # choose what to do with any message
         data = ''
         message_type, data = self.split_message(message)
-        try:
-            if message_type == START_SIGN:
-                self.start_user(user, data)
-            elif message_type == COMMAND_SIGN:
-                self.command(user, data)
-            elif message_type == UPLOAD_SIGN:
-                self.upload(user, data)
-            elif message_type == DOWNLOAD_SIGN:
-                self.download(user, data)
-            elif message_type == EXIT_SIGN:
-                self.exit_user(user)
-        except:
+        if message_type == START_SIGN:
+            self.start_user(user, data)
+        elif message_type == COMMAND_SIGN:
+            self.command(user, data)
+        elif message_type == UPLOAD_SIGN:
+            self.upload(user, data)
+        elif message_type == DOWNLOAD_SIGN:
+            self.download(user, data)
+        elif message_type == EXIT_SIGN:
+            self.exit_user(user)
+        elif message_type == CD_SIGN:
+            self.cd(user, data)
+        else:
             print('message is unrecogniz')
             user.send_message(FAILED_MESSAGE)
 
@@ -40,11 +41,13 @@ class MESSAGE_HANDLER:
     def exit_user(self, user):
         # care to user who leaving
         user.close()
-        # self.users.remove(user)
 
     def command(self, user, data):
         output = user.user_shell.command(data)
         user.send_message(output)
+
+    def cd(self, user, data):
+        user.user_shell.cd(data)
 
     def upload(self, user, data):
         path, data_len = self.file.unpack_file_properties(data)
@@ -53,11 +56,8 @@ class MESSAGE_HANDLER:
         self.file.create_file(path, file_data)
 
     def download(self, user, line):
-        print(line)
-        path, new_path = line.split(' ')
-        # user.send_message(SUCCESS_MESSAGE)
+        path, new_path = line.decode('utf-8').split()
         download_message, file_data = self.file.pack_file_properties(path, new_path)
-        print(download_message)
         user.send_message(download_message)
         answer = user.get_message()
         if answer == SUCCESS_MESSAGE:
