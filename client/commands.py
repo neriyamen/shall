@@ -1,15 +1,22 @@
-from format import *
-from files import FILE
+import messagesFormat
+import files
 
 class COMMANDS:
-    # all actions between client and socket
     def __init__(self, connection):
+        """
+        all actions between client and socket
+        :param connection: CONNECT class type, the connection between server and client
+        """
         self.connection = connection
-        self.file = FILE()
+        self.file = files.FILE()
 
     def command(self, line):
-        # "command" is for simple cli command like 'dir' or 'netstat -nat'
-        self.connection.send_message(COMMAND_SIGN + line.encode())
+        """
+        "command" is for simple cli command like 'dir' or 'netstat -nat'
+        :param line: string type, command to send to server
+        :return: string type, answer from the server
+        """
+        self.connection.send_message(messagesFormat.COMMAND_SIGN + line.encode())
         answer = self.connection.get_message(100000)
         try:
             return answer.decode('unicode_escape')
@@ -17,35 +24,53 @@ class COMMANDS:
             return answer.decode('utf-8')
 
     def upload(self, line):
-        # 'upload' is for transfer files from client to server
+        """
+        upload file (from the client to the server)
+        :param line: string type, properties of the file (path and new path)
+        :return: none
+        """
         path, new_path = line.split(' ')
         upload_message, file_data = self.file.pack_file_properties(path, new_path)
-        self.connection.send_message(UPLOAD_SIGN + upload_message)
+        self.connection.send_message(messagesFormat.UPLOAD_SIGN + upload_message)
         answer = self.connection.get_message()
-        if answer == SUCCESS_MESSAGE:
+        if answer == messagesFormat.SUCCESS_MESSAGE:
+            print('upload file...')
             self.connection.send_message(file_data)
 
     def download(self, line):
-        # 'download' is for transfer files from server to client
-        self.connection.send_message(DOWNLOAD_SIGN + line.encode())
+        """
+        download file (from the server to the client)
+        :param line: string type, properties of the file (path and new path)
+        :return: none
+        """
+        self.connection.send_message(messagesFormat.DOWNLOAD_SIGN + line.encode())
         data = self.connection.get_message()
         path, data_len = self.file.unpack_file_properties(data)
-        self.connection.send_message(SUCCESS_MESSAGE)
+        self.connection.send_message(messagesFormat.SUCCESS_MESSAGE)
         file_data = self.connection.get_message(data_len)
         self.file.create_file(path, file_data)
 
     def cd(self, line):
-        # change path in server
-        self.connection.send_message(CD_SIGN + line.encode())
+        """
+        cd in the server
+        :param line: string type, new path
+        :return: none
+        """
+        self.connection.send_message(messagesFormat.CD_SIGN + line.encode())
 
     def super(self):
-        # summary of important information about server
+        """
+        super command, print some importent properties of server
+        :return: none
+        """
         ipconfig = self.command('ipconfig')
         netstat = self.command('netstat -nat')
         print(ipconfig, netstat)
 
-
-
     def exit(self):
-        self.connection.send_message(EXIT_SIGN)
+        """
+        exit from the client
+        :return: none
+        """
+        self.connection.send_message(messagesFormat.EXIT_SIGN)
         exit()

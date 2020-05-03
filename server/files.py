@@ -1,32 +1,49 @@
-from format import *
 import struct
 import zipfile
 import os
 
 class FILE:
-    # trunsfer files between client and socket with zip option
-
-    def unpack_file_properties(self, data):
-        # the file is coming pack with properties. this function parser the packing.
+    @staticmethod
+    def unpack_file_properties(data):
+        """
+        the file is coming pack with properties. this function parser the packing.
+        :param data: bytes type, properties of file and data file packing
+        :return: tuple (string, bytes) - path, data len
+        """
         (path_len,) = struct.unpack('>i', data[:4])
         path = data[4:4 + path_len]
         (data_len,) = struct.unpack('>i', data[4 + path_len:8 + path_len])
         return path.decode('utf-8'), data_len
 
     def pack_file_properties(self, path, new_path):
-        # create package of file data and file's properties.
+        """
+        create package of file data and file's properties.
+        :param path: string type, current path
+        :param new_path: string type, new path
+        :return: bytes type, package of current path, new path, and file data
+        """
         zip_file = self.zip_file(path, new_path)
         return struct.pack(f'>I{len(new_path)}sI',
                            len(new_path), new_path.encode(), len(zip_file)), zip_file
 
     def create_file(self, path, zip_data):
-        # take a zipped file data and create a file
+        """
+        take a zipped file data and create a file
+        :param path: string type, new path of file
+        :param zip_data: bytes type, the data of the *zipped* file
+        :return: none
+        """
         file_data = self.unzip_file(path, zip_data)
         with open(path, 'wb') as file:
             file.write(file_data)
 
     def zip_file(self, path, new_path):
-        # zipper files
+        """
+        zipper files
+        :param path: string type, current path
+        :param new_path: string type, new path
+        :return: bytes type, data of zip file
+        """
         zip_file = zipfile.ZipFile(path + '.zip', mode='w')
         try:
             zip_file.write(path, new_path.split('\\')[-1])
@@ -40,7 +57,12 @@ class FILE:
             zip_file.close()
 
     def unzip_file(self, path, zip_data):
-        # unzip files
+        """
+        unzip files
+        :param path: string type, new path
+        :param zip_data: bytes type, zip file data
+        :return: none
+        """
         with open(path + '.zip', 'wb') as file:
             file.write(zip_data)
             file.close()
@@ -59,7 +81,11 @@ class FILE:
 
     @staticmethod
     def remove_file(path):
-        # remove file by path
+        """
+        remove file by path
+        :param path: string type, path of file to remove
+        :return: none
+        """
         try:
             os.remove(path)
         except:
